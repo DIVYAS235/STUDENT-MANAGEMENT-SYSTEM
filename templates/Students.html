@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Records</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; padding: 40px; }
+        .box { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        input { margin-bottom: 10px; width: 95%; padding: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        .del-btn { color: red; cursor: pointer; border: none; background: none; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Student Management System</h2>
+        <input type="text" id="sid" placeholder="Student ID (e.g. 101)">
+        <input type="text" id="sname" placeholder="Full Name">
+        <input type="text" id="sgrade" placeholder="Grade (e.g. A, B+)">
+        <button onclick="addStudent()" style="width: 100%; background: #28a745; color: white; border: none; padding: 10px;">Add Student</button>
+
+        <table id="studentTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Grade</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchStudents() {
+            const res = await fetch('/api/students');
+            const data = await res.json();
+            const tbody = document.querySelector('#studentTable tbody');
+            tbody.innerHTML = data.map(s => `
+                <tr>
+                    <td>${s.id}</td>
+                    <td>${s.name}</td>
+                    <td>${s.grade}</td>
+                    <td><button class="del-btn" onclick="deleteStudent('${s.id}')">Delete</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function addStudent() {
+            const payload = {
+                id: document.getElementById('sid').value,
+                name: document.getElementById('sname').value,
+                grade: document.getElementById('sgrade').value
+            };
+            await fetch('/api/students', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            fetchStudents();
+        }
+
+        async function deleteStudent(id) {
+            await fetch(`/api/students/${id}`, { method: 'DELETE' });
+            fetchStudents();
+        }
+
+        fetchStudents();
+    </script>
+</body>
+</html>
